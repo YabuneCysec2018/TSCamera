@@ -3,6 +3,7 @@ package com.example.diamond.tscamera;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
@@ -14,17 +15,22 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -37,9 +43,9 @@ import java.io.IOException;
 import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity
-        implements TextureView.SurfaceTextureListener, View.OnClickListener//, LocationListener
-        , com.google.android.gms.location.LocationListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        implements TextureView.SurfaceTextureListener, View.OnClickListener, LocationListener
+        /*, com.google.android.gms.location.LocationListener,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener*/ {
 
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCaptureSession;
@@ -75,25 +81,27 @@ public class MainActivity extends AppCompatActivity
         findViewById(R.id.shutter).setOnClickListener(this);
 
 
-        /*
+
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationStart();
         }
-        */
 
+
+        /*
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .enableAutoManage(this,this)
                 .build();
+        */
 
     }
 
 
-    /*
+
     private void locationStart() {
         Log.d("debug", "locationStart()");
 
@@ -149,7 +157,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
-    */
+
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -282,7 +290,7 @@ public class MainActivity extends AppCompatActivity
 
 
     /////////////////////////////////////////////位置情報に関する記述//////////////
-
+    /*
     @Override
     public void onLocationChanged(Location location) {//位置情報が更新されたとき
         latitude = location.getLatitude();    //緯度
@@ -326,7 +334,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {}//接続失敗
 
-
+*/
 
 
     /////////////////////////////////////////////////////// Start for Crick ////////////////////////
@@ -413,11 +421,13 @@ public class MainActivity extends AppCompatActivity
         return IOandConversion.fileToBytes(picFile);
     }
 
-    /*
+
     @Override
     public void onLocationChanged(Location location) {
         latitude = location.getLatitude();//緯度
         longitude= location.getLongitude();//経度
+        Toast toast = Toast.makeText(this, "位置情報更新", Toast.LENGTH_SHORT);
+        toast.show();
     }
 
     @Override
@@ -442,5 +452,5 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onProviderDisabled(String provider) { }
 
-    */
+
 }
