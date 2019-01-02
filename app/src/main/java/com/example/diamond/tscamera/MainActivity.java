@@ -387,11 +387,9 @@ public class MainActivity extends AppCompatActivity
                         byte[] imageBytes = new byte[byteBuffer.remaining()];
                         byteBuffer.get(imageBytes);
                         image.close();
-                        byte[] picBin = new byte[byteBuffer.capacity()];
-                        byteBuffer.duplicate().get(picBin);
 
                         //Make signature
-                        byte[] signature = SignatureTool.SIGN(picBin);
+                        byte[] signature = SignatureTool.SIGN(imageBytes);
                         String signedText = IOandConversion.byteToString(signature);
                         IOandConversion.saveStrings(DirPath, signedText, "/SignedData.txt");
                         IOandConversion.saveBinary(DirPath, signature, "/SignedData.bin");
@@ -408,7 +406,7 @@ public class MainActivity extends AppCompatActivity
                         //IOandConversion.setExif(DirPath + "/PictureData.jpg", latitude, longitude);
                         //picBin = IOandConversion.fileToBytes(new File(DirPath + "/PictureData.jpg"));
 
-                        freeTimeStamp.getFromServer(DirPath, TShash, picBin);
+                        freeTimeStamp.getFromServer(DirPath, TShash, imageBytes);
 
                         mCaptureSession.setRepeatingRequest(mCaptureRequest,null,null);
 
