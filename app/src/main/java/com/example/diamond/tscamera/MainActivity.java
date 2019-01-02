@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity
             //ビューを登録
             ArrayList<Surface> surfaceArrayList = new ArrayList<>();
             surfaceArrayList.add(mSurface);
-            //surfaceArrayList.add();               //imageReaderを登録したい
+            surfaceArrayList.add(imageReader.getSurface());               //imageReaderを登録したい
 
 
             //CameraCaptureSessionを生成
