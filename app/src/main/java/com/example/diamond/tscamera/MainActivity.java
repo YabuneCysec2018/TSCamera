@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                3000, 1, this);
+                5000, 5, this);
     }
 
 
@@ -356,6 +356,8 @@ public class MainActivity extends AppCompatActivity
     public void onLocationChanged(Location location) {
         latitude = location.getLatitude();//緯度
         longitude= location.getLongitude();//経度
+
+        this.location = location;
 
 
         Toast toast = Toast.makeText(this, "位置情報更新", Toast.LENGTH_SHORT);
