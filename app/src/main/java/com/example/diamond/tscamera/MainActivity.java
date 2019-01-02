@@ -419,8 +419,8 @@ public class MainActivity extends AppCompatActivity
 
                         FreeTimeStamp freeTimeStamp = new FreeTimeStamp();
 
-                        IOandConversion.setExif(DirPath + "/PictureData.jpg", latitude, longitude);
-                        imageBytes = IOandConversion.fileToBytes(new File(DirPath + "/PictureData.jpg"));
+                        IOandConversion.setExif(DirPath + "/PictureData.jpeg", latitude, longitude);
+                        imageBytes = IOandConversion.fileToBytes(new File(DirPath + "/PictureData.jpeg"));
 
                         freeTimeStamp.getFromServer(DirPath, TShash, imageBytes);
 
