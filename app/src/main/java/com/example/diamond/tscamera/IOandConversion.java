@@ -108,11 +108,12 @@ class IOandConversion {
                 if (segLen < 0) {
                     segLen += 256;
                 }
-                int x = original[read + 3];
-                if (x < 0) {
-                    x += 256;
+                segLen *= 256;
+
+                segLen += original[read + 3];
+                if (original[read + 3] < 0) {
+                    segLen += 256;
                 }
-                segLen = x*256 + segLen;
 
                 if (original[read + 1] == JPEGTag.DQT
                         || original[read + 1] == JPEGTag.DHT
@@ -120,7 +121,6 @@ class IOandConversion {
                         || original[read + 1] == JPEGTag.SOF0
                         || original[read + 1] == JPEGTag.APP0
                         || original[read + 1] == JPEGTag.APP1){
-
 
                     //resultをセグメント長分伸ばし、増えたところに新セグメントをコピー
                     result = Arrays.copyOf(result, result.length + segLen + 2);
