@@ -184,12 +184,13 @@ public class MainActivity extends AppCompatActivity
             mCaptureRequestBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
 
             //撮影用
+            imageReader = ImageReader.newInstance(mCameraBufferSize.getWidth(), mCameraBufferSize.getHeight(), ImageFormat.JPEG,1);
+            imageReader.setOnImageAvailableListener(onImageAvailableListener,null);
             captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(imageReader.getSurface());
             captureBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
 
-            imageReader = ImageReader.newInstance(mCameraBufferSize.getWidth(), mCameraBufferSize.getHeight(), ImageFormat.JPEG,1);
-            imageReader.setOnImageAvailableListener(onImageAvailableListener,null);
+
 
 
             //ビューを登録
