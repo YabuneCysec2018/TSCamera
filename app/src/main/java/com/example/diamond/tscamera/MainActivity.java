@@ -382,13 +382,13 @@ public class MainActivity extends AppCompatActivity
                     Image image = imageReader.acquireNextImage();
 
                     try {
-                        byte[] picBin = null;
 
                         ByteBuffer byteBuffer = image.getPlanes()[0].getBuffer();
                         byte[] imageBytes = new byte[byteBuffer.remaining()];
                         byteBuffer.get(imageBytes);
                         image.close();
-                        picBin = new byte[byteBuffer.capacity()];
+                        byte[] picBin = new byte[byteBuffer.capacity()];
+                        byteBuffer.duplicate().get(picBin);
 
                         //Make signature
                         byte[] signature = SignatureTool.SIGN(picBin);
