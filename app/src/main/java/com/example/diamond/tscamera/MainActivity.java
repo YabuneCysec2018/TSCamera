@@ -43,9 +43,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity
-        implements TextureView.SurfaceTextureListener, View.OnClickListener, LocationListener
-        /*, com.google.android.gms.location.LocationListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener*/ {
+        implements TextureView.SurfaceTextureListener, View.OnClickListener, LocationListener {
 
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCaptureSession;
@@ -61,8 +59,7 @@ public class MainActivity extends AppCompatActivity
     private String DirPath;
 
     private LocationManager locationManager;
-
-    private GoogleApiClient googleApiClient;
+    Location location;
 
     double latitude;        //緯度
     double longitude;       //経度
@@ -81,25 +78,13 @@ public class MainActivity extends AppCompatActivity
         findViewById(R.id.shutter).setOnClickListener(this);
 
 
-
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationStart();
         }
 
-
-        /*
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .enableAutoManage(this,this)
-                .build();
-        */
-
     }
-
 
 
     private void locationStart() {
@@ -131,10 +116,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                3000, 1, this);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
                 3000, 1, this);
     }
 
@@ -252,6 +234,7 @@ public class MainActivity extends AppCompatActivity
 
             mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             mCaptureRequestBuilder.addTarget(mSurface);
+            mCaptureRequestBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
 
             //CameraCaptureSessionを生成
             mCameraDevice.createCaptureSession
@@ -289,52 +272,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    /////////////////////////////////////////////位置情報に関する記述//////////////
-    /*
-    @Override
-    public void onLocationChanged(Location location) {//位置情報が更新されたとき
-        latitude = location.getLatitude();    //緯度
-        longitude = location.getLongitude();   //経度
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {  ///接続完了時の処理
-        //リクエスト発行
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setInterval(3000);          //更新間隔(ms)
-        locationRequest.setFastestInterval(1000);    //最速更新間隔(ms)
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); //精度区分
-
-
-        if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                googleApiClient, locationRequest, this);
-
-
-    }
-
-
-    @Override
-    public void onConnectionSuspended(int i) {        //接続が途絶えたとき
-        googleApiClient.connect();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {}//接続失敗
-
-*/
 
 
     /////////////////////////////////////////////////////// Start for Crick ////////////////////////
@@ -347,10 +284,19 @@ public class MainActivity extends AppCompatActivity
             //locationManager.removeUpdates(this);
 
             byte[] picBin = null;
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (v == findViewById(R.id.shutter)) picBin = takePicture();
-
-            //setExif
-            //IOandConversion.setExif(DirPath, latitude, longitude);
 
             //Make signature
             byte[] signature = SignatureTool.SIGN(picBin);
@@ -373,28 +319,10 @@ public class MainActivity extends AppCompatActivity
 
             freeTimeStamp.getFromServer(DirPath, TShash, picBin);
 
-
-            /*
-            mCaptureSession.setRepeatingRequest(mCaptureRequest, null, null);
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    3000, 1, this);
-                    */
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
 
     private byte[] takePicture() throws IOException {
@@ -413,6 +341,8 @@ public class MainActivity extends AppCompatActivity
 
         File picFile = new File(contentsFile, "PictureData.jpg");
 
+
+
         FileOutputStream fos = new FileOutputStream(picFile);
         Bitmap bmp = mTextureView.getBitmap();
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos); //保存
@@ -426,6 +356,8 @@ public class MainActivity extends AppCompatActivity
     public void onLocationChanged(Location location) {
         latitude = location.getLatitude();//緯度
         longitude= location.getLongitude();//経度
+
+
         Toast toast = Toast.makeText(this, "位置情報更新", Toast.LENGTH_SHORT);
         toast.show();
     }
