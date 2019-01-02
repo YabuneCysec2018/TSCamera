@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity
 
             //CameraCaptureSessionを生成
             mCameraDevice.createCaptureSession
-                    (Collections.singletonList(mSurface), CaptureSessionCallback, null);
+                    (surfaceArrayList, CaptureSessionCallback, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
