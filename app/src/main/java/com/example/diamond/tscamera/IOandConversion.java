@@ -109,12 +109,11 @@ class IOandConversion {
                 if (segLen < 0) {
                     segLen += 256;
                 }
-                segLen *= 16;
                 int x = original[read + 3];
                 if (x < 0) {
                     x += 256;
                 }
-                segLen += x;
+                segLen += x * 16;
 
                 if (original[read + 1] == JPEGTag.DQT
                         || original[read + 1] == JPEGTag.DHT
