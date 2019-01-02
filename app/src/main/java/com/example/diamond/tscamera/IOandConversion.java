@@ -103,7 +103,6 @@ class IOandConversion {
         while(true){                      //ファイルの最後まで
 
             if (original[read] == JPEGTag.MARKER){
-
                 //セグメント長読み込み
                 int segLen = original[read + 2];
                 if (segLen < 0) {
@@ -113,7 +112,7 @@ class IOandConversion {
                 if (x < 0) {
                     x += 256;
                 }
-                segLen += x * 16;
+                segLen = x*256 + segLen;
 
                 if (original[read + 1] == JPEGTag.DQT
                         || original[read + 1] == JPEGTag.DHT
