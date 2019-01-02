@@ -362,9 +362,9 @@ public class MainActivity extends AppCompatActivity
             //picBin = IOandConversion.fileToBytes(new File(DirPath + "/PictureData.jpg"));
 
             freeTimeStamp.getFromServer(DirPath, TShash, picBin);
-            */
-            mCaptureSession.setRepeatingRequest(mCaptureRequest,null,null);
 
+            mCaptureSession.setRepeatingRequest(mCaptureRequest,null,null);
+            */
         } catch (Exception e) {
             e.printStackTrace();
         }
