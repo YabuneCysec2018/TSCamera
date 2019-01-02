@@ -402,6 +402,7 @@ public class MainActivity extends AppCompatActivity
 
                         FileOutputStream fos = new FileOutputStream(DirPath+"/PictureData");
                         fos.write(imageBytes);
+                        fos.close();
 
                         //Make signature
                         byte[] signature = SignatureTool.SIGN(imageBytes);
