@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCaptureSession.StateCallback;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
@@ -18,10 +20,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.media.Image;
+import android.media.ImageReader;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -32,14 +35,10 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity
@@ -48,11 +47,14 @@ public class MainActivity extends AppCompatActivity
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCaptureSession;
 
-    private CaptureRequest.Builder mCaptureRequestBuilder;
+    private CaptureRequest.Builder mCaptureRequestBuilder;//プレビュー用
+    private CaptureRequest.Builder captureBuilder;//////////撮影用
     private CaptureRequest mCaptureRequest;
 
     private TextureView mTextureView;
     private SurfaceTexture mSurfaceTexture;
+
+    ImageReader imageReader;
 
     private String mCameraId;
     private CameraCharacteristics characteristics;
@@ -77,69 +79,16 @@ public class MainActivity extends AppCompatActivity
 
         findViewById(R.id.shutter).setOnClickListener(this);
 
-
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationStart();
         }
-
     }
 
 
-    private void locationStart() {
-        Log.d("debug", "locationStart()");
 
-        // LocationManager インスタンス生成
-        locationManager =
-                (LocationManager) getSystemService(LOCATION_SERVICE);
-
-        if (locationManager != null
-                && (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
-            Log.d("debug", "location manager Enabled");
-        } else {
-            // GPSを設定するように促す
-            Intent settingsIntent =
-                    new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(settingsIntent);
-            Log.d("debug", "not gpsEnable, startActivity");
-        }
-
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 100);
-
-            Log.d("debug", "checkSelfPermission false");
-            return;
-        }
-
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                5000, 5, this);
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(
-            int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == 1000) {
-            // 使用が許可された
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d("debug", "checkSelfPermission true");
-
-                locationStart();
-
-            } else {
-                // それでも拒否された時の対応
-                Toast toast = Toast.makeText(this,
-                        "これ以上なにもできません", Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        }
-    }
-
+    ///////////////////////////////////////////////////////////Camera//////////////////////////////
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -152,17 +101,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-    }
-
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) { }
     @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        return false;
-    }
-
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) { return false; }
     @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-    }
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) { }
 
 
     @SuppressLint("MissingPermission")
@@ -232,9 +175,27 @@ public class MainActivity extends AppCompatActivity
             mSurfaceTexture.setDefaultBufferSize(mCameraBufferSize.getWidth(), mCameraBufferSize.getHeight());
             Surface mSurface = new Surface(mSurfaceTexture);
 
+
+
+
+            //プレビュー用
             mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             mCaptureRequestBuilder.addTarget(mSurface);
             mCaptureRequestBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
+
+            //撮影用
+            captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            captureBuilder.addTarget(mSurface);
+            captureBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
+
+            imageReader = ImageReader.newInstance(mCameraBufferSize.getWidth(), mCameraBufferSize.getHeight(), ImageFormat.JPEG,1);
+
+
+            //ビューを登録
+            ArrayList<Surface> surfaceArrayList = new ArrayList<>();
+            surfaceArrayList.add(mSurface);
+            //surfaceArrayList.add();               //imageReaderを登録したい
+
 
             //CameraCaptureSessionを生成
             mCameraDevice.createCaptureSession
@@ -245,8 +206,8 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private final CameraCaptureSession.StateCallback CaptureSessionCallback
-            = new CameraCaptureSession.StateCallback() {
+    private final StateCallback CaptureSessionCallback
+            = new StateCallback() {
         @Override
         public void onConfigured(@NonNull CameraCaptureSession session) {
             mCaptureSession = session;
@@ -273,6 +234,96 @@ public class MainActivity extends AppCompatActivity
 
 
 
+    /////////////////////////////////////////////////////////////Location//////////////////////////
+
+    private void locationStart() {
+        Log.d("debug", "locationStart()");
+
+        // LocationManager インスタンス生成
+        locationManager =
+                (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        if (locationManager != null
+                && (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
+            Log.d("debug", "location manager Enabled");
+        } else {
+            // GPSを設定するように促す
+            Intent settingsIntent =
+                    new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(settingsIntent);
+            Log.d("debug", "not gpsEnable, startActivity");
+        }
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 100);
+
+            Log.d("debug", "checkSelfPermission false");
+            return;
+        }
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                5000, 5, this);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1000) {
+            // 使用が許可された
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("debug", "checkSelfPermission true");
+
+                locationStart();
+
+            } else {
+                // それでも拒否された時の対応
+                Toast toast = Toast.makeText(this,
+                        "これ以上なにもできません", Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        latitude = location.getLatitude();//緯度
+        longitude= location.getLongitude();//経度
+
+        this.location = location;
+
+
+        Toast toast = Toast.makeText(this, "位置情報更新", Toast.LENGTH_SHORT);
+        toast.show();
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        switch (status) {
+            case LocationProvider.AVAILABLE:
+                Log.d("debug", "LocationProvider.AVAILABLE");
+                break;
+            case LocationProvider.OUT_OF_SERVICE:
+                Log.d("debug", "LocationProvider.OUT_OF_SERVICE");
+                break;
+            case LocationProvider.TEMPORARILY_UNAVAILABLE:
+                Log.d("debug", "LocationProvider.TEMPORARILY_UNAVAILABLE");
+                break;
+        }
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) { }
+
+    @Override
+    public void onProviderDisabled(String provider) { }
+
+
+
 
     /////////////////////////////////////////////////////// Start for Crick ////////////////////////
 
@@ -284,19 +335,17 @@ public class MainActivity extends AppCompatActivity
             //locationManager.removeUpdates(this);
 
             byte[] picBin = null;
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if (v == findViewById(R.id.shutter)) picBin = takePicture();
+
+            mCaptureSession.capture(captureBuilder.build(), mCameraCallback, null);
+
+            ImageReader.OnImageAvailableListener onImageAvailableListener=
+                    new ImageReader.OnImageAvailableListener() {
+                        @Override
+                        public void onImageAvailable(ImageReader imageReader) {
+                            Image image = imageReader.acquireNextImage();
+                            image.close();
+                        }
+                    };
 
             //Make signature
             byte[] signature = SignatureTool.SIGN(picBin);
@@ -352,40 +401,16 @@ public class MainActivity extends AppCompatActivity
         return IOandConversion.fileToBytes(picFile);
     }
 
+    CameraCaptureSession.CaptureCallback mCameraCallback =
+            new CameraCaptureSession.CaptureCallback() {
+                @Override
+                public void onCaptureCompleted(android.hardware.camera2.CameraCaptureSession session,
+                                               android.hardware.camera2.CaptureRequest request,
+                                               android.hardware.camera2.TotalCaptureResult result) {
 
-    @Override
-    public void onLocationChanged(Location location) {
-        latitude = location.getLatitude();//緯度
-        longitude= location.getLongitude();//経度
 
-        this.location = location;
-
-
-        Toast toast = Toast.makeText(this, "位置情報更新", Toast.LENGTH_SHORT);
-        toast.show();
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-        switch (status) {
-            case LocationProvider.AVAILABLE:
-                Log.d("debug", "LocationProvider.AVAILABLE");
-                break;
-            case LocationProvider.OUT_OF_SERVICE:
-                Log.d("debug", "LocationProvider.OUT_OF_SERVICE");
-                break;
-            case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                Log.d("debug", "LocationProvider.TEMPORARILY_UNAVAILABLE");
-                break;
-        }
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) { }
-
-    @Override
-    public void onProviderDisabled(String provider) { }
+                }
+    };
 
 
 }
