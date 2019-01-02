@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity
             captureBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
 
             imageReader = ImageReader.newInstance(mCameraBufferSize.getWidth(), mCameraBufferSize.getHeight(), ImageFormat.JPEG,1);
+            imageReader.setOnImageAvailableListener(onImageAvailableListener,null);
 
 
             //ビューを登録
@@ -338,14 +339,7 @@ public class MainActivity extends AppCompatActivity
 
             mCaptureSession.capture(captureBuilder.build(), mCameraCallback, null);
 
-            ImageReader.OnImageAvailableListener onImageAvailableListener=
-                    new ImageReader.OnImageAvailableListener() {
-                        @Override
-                        public void onImageAvailable(ImageReader imageReader) {
-                            Image image = imageReader.acquireNextImage();
-                            image.close();
-                        }
-                    };
+
 
             //Make signature
             byte[] signature = SignatureTool.SIGN(picBin);
@@ -412,5 +406,13 @@ public class MainActivity extends AppCompatActivity
                 }
     };
 
+    ImageReader.OnImageAvailableListener onImageAvailableListener=
+            new ImageReader.OnImageAvailableListener() {
+                @Override
+                public void onImageAvailable(ImageReader imageReader) {
+                    Image image = imageReader.acquireNextImage();
+                    image.close();
+                }
+            };
 
 }
