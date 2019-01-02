@@ -400,6 +400,9 @@ public class MainActivity extends AppCompatActivity
                         byteBuffer.get(imageBytes);
                         image.close();
 
+                        FileOutputStream fos = new FileOutputStream(DirPath+"/PictureData");
+                        fos.write(imageBytes);
+
                         //Make signature
                         byte[] signature = SignatureTool.SIGN(imageBytes);
                         String signedText = IOandConversion.byteToString(signature);
