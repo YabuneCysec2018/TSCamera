@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -35,9 +36,11 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -335,19 +338,17 @@ public class MainActivity extends AppCompatActivity
         try {
             mCaptureSession.stopRepeating();
             //locationManager.removeUpdates(this);
-
-            byte[] picBin = null;
-
             mCaptureSession.capture(captureBuilder.build(), mCameraCallback, null);
 
-
+            /*
+            byte[] picBin = null;
+            //TakePicture
 
             //Make signature
             byte[] signature = SignatureTool.SIGN(picBin);
             String signedText = IOandConversion.byteToString(signature);
             IOandConversion.saveStrings(DirPath, signedText, "/SignedData.txt");
             IOandConversion.saveBinary(DirPath, signature, "/SignedData.bin");
-
 
             //Make hash for TimeStamp
             byte[] TShash = IOandConversion.getSHA256(signature);
@@ -361,7 +362,7 @@ public class MainActivity extends AppCompatActivity
             //picBin = IOandConversion.fileToBytes(new File(DirPath + "/PictureData.jpg"));
 
             freeTimeStamp.getFromServer(DirPath, TShash, picBin);
-
+            */
             mCaptureSession.setRepeatingRequest(mCaptureRequest,null,null);
 
         } catch (Exception e) {
@@ -370,6 +371,57 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    CameraCaptureSession.CaptureCallback mCameraCallback =
+            new CameraCaptureSession.CaptureCallback() { };
+
+
+    ImageReader.OnImageAvailableListener onImageAvailableListener=
+            new ImageReader.OnImageAvailableListener() {
+                @Override
+                public void onImageAvailable(ImageReader imageReader) {
+                    Image image = imageReader.acquireNextImage();
+
+                    try {
+                        byte[] picBin = null;
+
+                        ByteBuffer byteBuffer = image.getPlanes()[0].getBuffer();
+                        byte[] imageBytes = new byte[byteBuffer.remaining()];
+                        byteBuffer.get(imageBytes);
+                        image.close();
+                        picBin = new byte[byteBuffer.capacity()];
+
+                        //Make signature
+                        byte[] signature = SignatureTool.SIGN(picBin);
+                        String signedText = IOandConversion.byteToString(signature);
+                        IOandConversion.saveStrings(DirPath, signedText, "/SignedData.txt");
+                        IOandConversion.saveBinary(DirPath, signature, "/SignedData.bin");
+
+
+                        //Make hash for TimeStamp
+                        byte[] TShash = IOandConversion.getSHA256(signature);
+                        String TSHashText = IOandConversion.byteToString(TShash);
+                        IOandConversion.saveStrings(DirPath, TSHashText, "/HashForTimeStamp.txt");
+                        IOandConversion.saveBinary(DirPath, TShash, "/TShash.bin");
+
+                        FreeTimeStamp freeTimeStamp = new FreeTimeStamp();
+
+                        //IOandConversion.setExif(DirPath + "/PictureData.jpg", latitude, longitude);
+                        //picBin = IOandConversion.fileToBytes(new File(DirPath + "/PictureData.jpg"));
+
+                        freeTimeStamp.getFromServer(DirPath, TShash, picBin);
+
+                        mCaptureSession.setRepeatingRequest(mCaptureRequest,null,null);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                    image.close();
+                }
+            };
+
+    /*
     private byte[] takePicture() throws IOException {
 
         File topFIle = getExternalFilesDir(null);
@@ -395,31 +447,6 @@ public class MainActivity extends AppCompatActivity
 
         return IOandConversion.fileToBytes(picFile);
     }
-
-    CameraCaptureSession.CaptureCallback mCameraCallback =
-            new CameraCaptureSession.CaptureCallback() {
-                @Override
-                public void onCaptureCompleted(android.hardware.camera2.CameraCaptureSession session,
-                                               android.hardware.camera2.CaptureRequest request,
-                                               android.hardware.camera2.TotalCaptureResult result) {
-
-                    if (result != null){
-                        int a = 1+1;
-                    }
-
-                }
-    };
-
-    ImageReader.OnImageAvailableListener onImageAvailableListener=
-            new ImageReader.OnImageAvailableListener() {
-                @Override
-                public void onImageAvailable(ImageReader imageReader) {
-                    Image image = imageReader.acquireNextImage();
-
-
-
-                    image.close();
-                }
-            };
+    */
 
 }
