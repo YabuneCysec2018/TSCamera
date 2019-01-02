@@ -318,6 +318,8 @@ public class MainActivity extends AppCompatActivity
 
             freeTimeStamp.getFromServer(DirPath, TShash, picBin);
 
+            mCaptureSession.setRepeatingRequest(mCaptureRequest,null,null);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
