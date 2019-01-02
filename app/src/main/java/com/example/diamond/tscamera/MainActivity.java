@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity
 
             //撮影用
             captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            captureBuilder.addTarget(mSurface);
+            captureBuilder.addTarget(imageReader.getSurface());
             captureBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
 
             imageReader = ImageReader.newInstance(mCameraBufferSize.getWidth(), mCameraBufferSize.getHeight(), ImageFormat.JPEG,1);
@@ -414,6 +414,9 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onImageAvailable(ImageReader imageReader) {
                     Image image = imageReader.acquireNextImage();
+
+
+
                     image.close();
                 }
             };
