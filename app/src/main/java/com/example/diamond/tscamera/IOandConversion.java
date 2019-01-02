@@ -120,7 +120,8 @@ class IOandConversion {
                         || original[read + 1] == JPEGTag.SOI
                         || original[read + 1] == JPEGTag.SOF0
                         || original[read + 1] == JPEGTag.APP0
-                        || original[read + 1] == JPEGTag.APP1){
+                        || original[read + 1] == JPEGTag.APP1
+                        || original[read + 1] == JPEGTag.APP5){
 
                     //resultをセグメント長分伸ばし、増えたところに新セグメントをコピー
                     result = Arrays.copyOf(result, result.length + segLen + 2);
@@ -233,6 +234,7 @@ class IOandConversion {
         byte SOS = (byte) 0xda;
         byte APP0= (byte) 0xe0;
         byte APP1= (byte) 0xe1;
+        byte APP5= (byte) 0xe5;
         byte APP10=(byte) 0xea;
         byte SOF0= (byte) 0xc0;
         byte SOF2= (byte) 0xc2;
