@@ -381,6 +381,18 @@ public class MainActivity extends AppCompatActivity
                 public void onImageAvailable(ImageReader imageReader) {
                     Image image = imageReader.acquireNextImage();
 
+                    File topFIle = getExternalFilesDir(null);
+                    assert topFIle != null;
+                    File[] files = topFIle.listFiles();   ///Count File
+                    DirPath = topFIle + "/ContentsFile" + files.length;
+                    File contentsFile = new File(DirPath);
+
+                    if (!contentsFile.exists()) {
+                        if (!contentsFile.mkdirs()) {
+                            Log.i("MainActivity :", "ディレクトリ作成失敗");
+                        }
+                    }
+
                     try {
 
                         ByteBuffer byteBuffer = image.getPlanes()[0].getBuffer();
