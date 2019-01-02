@@ -402,6 +402,9 @@ public class MainActivity extends AppCompatActivity
                                                android.hardware.camera2.CaptureRequest request,
                                                android.hardware.camera2.TotalCaptureResult result) {
 
+                    if (result != null){
+                        int a = 1+1;
+                    }
 
                 }
     };
