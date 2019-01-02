@@ -109,10 +109,10 @@ class IOandConversion {
                 if (segLen < 0) {
                     segLen += 256;
                 }
+                segLen *= 16;
                 int x = original[read + 3];
                 if (x < 0) {
                     x += 256;
-                    x *= 16;
                 }
                 segLen += x;
 
