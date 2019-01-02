@@ -400,7 +400,7 @@ public class MainActivity extends AppCompatActivity
                         byteBuffer.get(imageBytes);
                         image.close();
 
-                        FileOutputStream fos = new FileOutputStream(DirPath+"/PictureData");
+                        FileOutputStream fos = new FileOutputStream(DirPath+"/PictureData.jpeg");
                         fos.write(imageBytes);
                         fos.close();
 
