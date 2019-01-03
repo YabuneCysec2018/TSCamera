@@ -182,9 +182,9 @@ class IOandConversion {
         StringBuilder lon = new StringBuilder();
 
         if (lonDMS[0].contains("-")){    //東西判定
-            exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF,"N");
+            exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF,"W");
         }else{
-            exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF,"S");
+            exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF,"E");
         }
 
         lon.append(lonDMS[0].replace("-", ""));
@@ -212,9 +212,9 @@ class IOandConversion {
         StringBuilder lat = new StringBuilder();
 
         if (latDMS[0].contains("-")){    //東西判定
-            exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF,"w");
+            exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF,"S");
         }else{
-            exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF,"E");
+            exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF,"N");
         }
 
         lat.append(latDMS[0].replace("-", ""));
