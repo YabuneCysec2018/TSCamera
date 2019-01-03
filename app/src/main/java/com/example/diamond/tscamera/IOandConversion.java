@@ -118,11 +118,6 @@ class IOandConversion {
                 }
 
                 if (original[read + 1] == JPEGTag.DQT && DQTcount == 0){
-                    //DQTをそのままコピー
-                    result = Arrays.copyOf(result, result.length + segLen + 2);
-                    System.arraycopy(original, read, result, write, segLen + 2);
-                    write += segLen + 2;            //次回書き込み・読み込み位置を設定
-                    read  += segLen + 2;
 
                     //APP10(Certificate)
                     result = Arrays.copyOf(result, result.length + cert.length + 2);
@@ -137,6 +132,12 @@ class IOandConversion {
                     result[write++] = JPEGTag.APP11;                       //APP11タグ
                     System.arraycopy(tst, 0, result, write, tst.length);
                     write += tst.length;
+
+                    //DQTをそのままコピー
+                    result = Arrays.copyOf(result, result.length + segLen + 2);
+                    System.arraycopy(original, read, result, write, segLen + 2);
+                    write += segLen + 2;            //次回書き込み・読み込み位置を設定
+                    read  += segLen + 2;
 
                     DQTcount++;
 
