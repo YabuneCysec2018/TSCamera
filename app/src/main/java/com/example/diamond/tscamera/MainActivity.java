@@ -44,6 +44,7 @@ import java.nio.ByteBuffer;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
         implements TextureView.SurfaceTextureListener, View.OnClickListener, LocationListener {
@@ -420,12 +421,19 @@ public class MainActivity extends AppCompatActivity
                         IOandConversion.saveStrings(DirPath, TSHashText, "/HashForTimeStamp.txt");
                         IOandConversion.saveBinary(DirPath, TShash, "/TShash.bin");
 
-                        FreeTimeStamp freeTimeStamp = new FreeTimeStamp();
-
+                        //set Location data
                         IOandConversion.setExif(DirPath + "/PictureData.jpeg", latitude, longitude);
                         imageBytes = IOandConversion.fileToBytes(new File(DirPath + "/PictureData.jpeg"));
 
-                        freeTimeStamp.getFromServer(DirPath, TShash, imageBytes, x509byte);
+                        // nonceの生成
+                        byte[] nonce = new byte[8];
+                        new Random().nextBytes(nonce);
+                        //make TimeStampRequest
+                        byte[] request = FreeTimeStamp.makeRequest(TShash, nonce);
+
+                        //send Request
+                        httpConnect connect = new httpConnect(request, DirPath, nonce, TShash, imageBytes, x509byte);
+                        connect.execute("http://eswg.jnsa.org/freetsa");
 
                         mCaptureSession.setRepeatingRequest(mCaptureRequest,null,null);
 

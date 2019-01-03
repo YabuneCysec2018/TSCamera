@@ -7,7 +7,6 @@ import com.example.diamond.tscamera.FreePKI.DERTag;
 import com.example.diamond.tscamera.FreePKI.OID;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.PublicKey;
@@ -41,7 +40,6 @@ public class FreeTimeStamp implements IFreeTimeStamp{
     private String	signAlg_ = null;					// 署名アルゴリズム
     private byte[]	signature_ = null;					// 署名値
 
-    private String pass = null;
 
     /* コンストラクタ */
     FreeTimeStamp() {
@@ -52,8 +50,7 @@ public class FreeTimeStamp implements IFreeTimeStamp{
     FreeTimeStamp(byte[] token, byte[] nonce, byte[] hash,
                   byte[] jpgData, byte[] x509Certificate, String pass) {
         clear();
-        this.pass = pass;
-        setToken(token, nonce, hash, jpgData, x509Certificate);
+        setToken(token, nonce, hash, jpgData, x509Certificate, pass);
 
     }
 
@@ -105,7 +102,7 @@ public class FreeTimeStamp implements IFreeTimeStamp{
     /* タイムスタンプトークンのバイナリをセットする */
     @Override
     public int setToken(byte[] token, byte[] nonce, byte[] hash,
-                        byte[] jpgData, byte[] x509Certificate)
+                        byte[] jpgData, byte[] x509Certificate, String pass)
     {
         if(token == null) {
             // クリア

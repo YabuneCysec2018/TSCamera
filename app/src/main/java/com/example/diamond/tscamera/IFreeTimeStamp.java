@@ -36,7 +36,7 @@ public interface IFreeTimeStamp {
      * @return エラーなし FTERR_NO_ERROR が返る
      */
     public int setToken(byte[] token, byte[] nonce, byte[] hash,
-                        byte[] jpgData, byte[] x509Certificate);
+                        byte[] jpgData, byte[] x509Certificate, String pass);
 
     /** タイムスタンプトークンがセット済みかどうかを返す
      * getFromServer()またはsetToken()によりタイムスタンプトークンがセット済みかどうかを返す。
