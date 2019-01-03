@@ -105,7 +105,7 @@ public class httpConnect extends AsyncTask<String, Void, byte[]> {
             IOandConversion.saveBinary(DirPath, tst,"/tst.tst");
 
             FreeTimeStamp freeTimeStamp =
-                    new FreeTimeStamp(tst, nonce, hash, jpgData, x509Certificate);
+                    new FreeTimeStamp(tst, nonce, hash, jpgData, x509Certificate, DirPath);
 
             // タイムスタンプトークンの解析
 
