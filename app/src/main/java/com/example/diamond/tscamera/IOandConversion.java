@@ -141,6 +141,16 @@ class IOandConversion {
                     DQTcount++;
 
 
+                } else if (original[read + 1] == JPEGTag.DQT){
+
+                    //resultをセグメント長分伸ばし、増えたところに新セグメントをコピー
+                    result = Arrays.copyOf(result, result.length + segLen + 2);
+                    System.arraycopy(original, read, result, write, segLen + 2);
+
+                    write += segLen + 2;            //次回書き込み・読み込み位置を設定
+                    read  += segLen + 2;
+
+
                 } else if (original[read + 1] == JPEGTag.DHT
                         || original[read + 1] == JPEGTag.SOI
                         || original[read + 1] == JPEGTag.SOF0
@@ -158,13 +168,11 @@ class IOandConversion {
                     read  += segLen + 2;
 
 
-
                 } else if (original[read + 1] == JPEGTag.SOS) {  //SOSの次は直接画像データがくる
 
                     //resultをセグメント長分伸ばし、増えたところに最後までコピー
                     result = Arrays.copyOf(result, result.length + bytesLength - read);
                     System.arraycopy(original, read, result, write, bytesLength - read);
-
                     break;
 
                 } else { read += segLen + 2;}    //readを次のマーカーの位置に合わせる
