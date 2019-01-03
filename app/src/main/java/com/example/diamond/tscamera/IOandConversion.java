@@ -94,6 +94,7 @@ class IOandConversion {
         byte[] result = new byte[2];
         int read = 0;
         int write= 2;
+        int DQTcount = 0;
 
 
         //SOIのみコピー
@@ -116,24 +117,7 @@ class IOandConversion {
                     segLen += 256;
                 }
 
-                if (original[read + 1] == JPEGTag.DHT
-                        || original[read + 1] == JPEGTag.SOI
-                        || original[read + 1] == JPEGTag.SOF0
-                        || original[read + 1] == JPEGTag.APP0
-                        || original[read + 1] == JPEGTag.APP1
-                        || original[read + 1] == JPEGTag.APP5
-                        || original[read + 1] == JPEGTag.APP6
-                        || original[read + 1] == JPEGTag.APP7){
-
-                    //resultをセグメント長分伸ばし、増えたところに新セグメントをコピー
-                    result = Arrays.copyOf(result, result.length + segLen + 2);
-                    System.arraycopy(original, read, result, write, segLen + 2);
-
-                    write += segLen + 2;            //次回書き込み・読み込み位置を設定
-                    read  += segLen + 2;
-
-
-                } else if (original[read + 1] == JPEGTag.DQT){
+                if (original[read + 1] == JPEGTag.DQT && DQTcount == 0){
                     //DQTをそのままコピー
                     result = Arrays.copyOf(result, result.length + segLen + 2);
                     System.arraycopy(original, read, result, write, segLen + 2);
@@ -153,6 +137,26 @@ class IOandConversion {
                     result[write++] = JPEGTag.APP11;                       //APP11タグ
                     System.arraycopy(tst, 0, result, write, tst.length);
                     write += tst.length;
+
+                    DQTcount++;
+
+
+                } else if (original[read + 1] == JPEGTag.DHT
+                        || original[read + 1] == JPEGTag.SOI
+                        || original[read + 1] == JPEGTag.SOF0
+                        || original[read + 1] == JPEGTag.APP0
+                        || original[read + 1] == JPEGTag.APP1
+                        || original[read + 1] == JPEGTag.APP5
+                        || original[read + 1] == JPEGTag.APP6
+                        || original[read + 1] == JPEGTag.APP7){
+
+                    //resultをセグメント長分伸ばし、増えたところに新セグメントをコピー
+                    result = Arrays.copyOf(result, result.length + segLen + 2);
+                    System.arraycopy(original, read, result, write, segLen + 2);
+
+                    write += segLen + 2;            //次回書き込み・読み込み位置を設定
+                    read  += segLen + 2;
+
 
 
                 } else if (original[read + 1] == JPEGTag.SOS) {  //SOSの次は直接画像データがくる

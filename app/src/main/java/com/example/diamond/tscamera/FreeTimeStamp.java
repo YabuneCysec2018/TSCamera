@@ -7,6 +7,9 @@ import com.example.diamond.tscamera.FreePKI.DERTag;
 import com.example.diamond.tscamera.FreePKI.OID;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.cert.CertificateException;
@@ -38,6 +41,8 @@ public class FreeTimeStamp implements IFreeTimeStamp{
     private String	signAlg_ = null;					// 署名アルゴリズム
     private byte[]	signature_ = null;					// 署名値
 
+    private String pass = null;
+
     /* コンストラクタ */
     FreeTimeStamp() {
         clear();
@@ -45,9 +50,11 @@ public class FreeTimeStamp implements IFreeTimeStamp{
 
     /* コンストラクタ */
     FreeTimeStamp(byte[] token, byte[] nonce, byte[] hash,
-                  byte[] jpgData, byte[] x509Certificate) {
+                  byte[] jpgData, byte[] x509Certificate, String pass) {
         clear();
+        this.pass = pass;
         setToken(token, nonce, hash, jpgData, x509Certificate);
+
     }
 
     /* ファイナライズ */
@@ -126,7 +133,16 @@ public class FreeTimeStamp implements IFreeTimeStamp{
         // ハッシュ値の確認
         if(!FreePKI.isEqual(hash, msgImprint_)) Log.d("nonce", "nonce");
 
-        IOandConversion.setDataToJPEG(jpgData, token, x509Certificate);
+
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(pass + "/TimeStampPic.jpeg");
+            fos.write(IOandConversion.setDataToJPEG(jpgData, token, x509Certificate));
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return rc;
     }
