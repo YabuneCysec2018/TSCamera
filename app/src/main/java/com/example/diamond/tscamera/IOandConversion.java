@@ -122,7 +122,17 @@ class IOandConversion {
                         || original[read + 1] == JPEGTag.SOF0
                         || original[read + 1] == JPEGTag.APP0
                         || original[read + 1] == JPEGTag.APP1
-                        ){
+                        || original[read + 1] == JPEGTag.APP5
+                        || original[read + 1] == JPEGTag.APP6
+                        || original[read + 1] == JPEGTag.APP7
+                        || original[read + 1] == JPEGTag.APP8
+                        || original[read + 1] == JPEGTag.APP9
+                        || original[read + 1] == JPEGTag.APP10
+                        || original[read + 1] == JPEGTag.APP11
+                        || original[read + 1] == JPEGTag.APP12
+                        || original[read + 1] == JPEGTag.APP13
+                        || original[read + 1] == JPEGTag.APP14
+                        || original[read + 1] == JPEGTag.APP15){
 
                     //resultをセグメント長分伸ばし、増えたところに新セグメントをコピー
                     result = Arrays.copyOf(result, result.length + segLen + 2);
@@ -251,8 +261,16 @@ class IOandConversion {
         byte APP0= (byte) 0xe0;
         byte APP1= (byte) 0xe1;
         byte APP5= (byte) 0xe5;
+        byte APP6= (byte) 0xe6;
+        byte APP7= (byte) 0xe7;
+        byte APP8= (byte) 0xe8;
+        byte APP9= (byte) 0xe9;
         byte APP10=(byte) 0xea;
         byte APP11=(byte) 0xeb;
+        byte APP12=(byte) 0xec;
+        byte APP13=(byte) 0xed;
+        byte APP14=(byte) 0xee;
+        byte APP15=(byte) 0xef;
         byte SOF0= (byte) 0xc0;
         byte SOF2= (byte) 0xc2;
     }
