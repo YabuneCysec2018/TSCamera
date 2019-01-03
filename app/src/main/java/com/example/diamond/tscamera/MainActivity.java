@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -405,11 +406,13 @@ public class MainActivity extends AppCompatActivity
                         fos.close();
 
                         //Make signature
-                        byte[] signature = SignatureTool.SIGN(imageBytes);
+                        SignatureTool signatureTool = new SignatureTool();
+                        byte[] signature = signatureTool.SIGN(imageBytes);
                         String signedText = IOandConversion.byteToString(signature);
                         IOandConversion.saveStrings(DirPath, signedText, "/SignedData.txt");
                         IOandConversion.saveBinary(DirPath, signature, "/SignedData.bin");
-
+                        X509Certificate x509Certificate = signatureTool.getX509Certificate();
+                        byte[] x509byte = x509Certificate.getTBSCertificate();
 
                         //Make hash for TimeStamp
                         byte[] TShash = IOandConversion.getSHA256(signature);
@@ -422,7 +425,7 @@ public class MainActivity extends AppCompatActivity
                         IOandConversion.setExif(DirPath + "/PictureData.jpeg", latitude, longitude);
                         imageBytes = IOandConversion.fileToBytes(new File(DirPath + "/PictureData.jpeg"));
 
-                        freeTimeStamp.getFromServer(DirPath, TShash, imageBytes);
+                        freeTimeStamp.getFromServer(DirPath, TShash, imageBytes, x509byte);
 
                         mCaptureSession.setRepeatingRequest(mCaptureRequest,null,null);
 

@@ -19,6 +19,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -28,11 +29,15 @@ class SignatureTool {
     private static final String KeyProvider = "AndroidKeyStore";
     private static final String KeyAlias = "TimeStamp";
 
+    private KeyStore keyStore;
 
-    static byte[] SIGN(byte[] bytes){
+
+     byte[] SIGN(byte[] bytes){
         try{
-            KeyStore keyStore = KeyStore.getInstance(KeyProvider);
-            keyStore.load(null);
+            if (keyStore == null) {
+                keyStore = KeyStore.getInstance(KeyProvider);
+                keyStore.load(null);
+            }
 
             PrivateKey privateKey;
             if (keyStore.containsAlias(KeyAlias)) {
@@ -59,11 +64,13 @@ class SignatureTool {
     }
 
 
-    static boolean VERIFY(byte[] bytes){
+     boolean VERIFY(byte[] bytes){
         boolean result = false;
         try{
-            KeyStore keyStore = KeyStore.getInstance(KeyProvider);
-            keyStore.load(null);
+            if (keyStore == null) {
+                keyStore = KeyStore.getInstance(KeyProvider);
+                keyStore.load(null);
+            }
 
             PublicKey publicKey;
             if (keyStore.containsAlias(KeyAlias)){
@@ -87,7 +94,7 @@ class SignatureTool {
     }
 
 
-    private static KeyPair createNewKeyPair() throws
+    private KeyPair createNewKeyPair() throws
             NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchProviderException {
 
         KeyPairGenerator keyPairGenerator;
@@ -108,5 +115,15 @@ class SignatureTool {
 
 
         return keyPairGenerator.generateKeyPair();
+    }
+
+    X509Certificate getX509Certificate() {
+        X509Certificate x509Certificate = null;
+        try {
+            x509Certificate = (X509Certificate) keyStore.getCertificate(KeyAlias);
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
+        return x509Certificate;
     }
 }

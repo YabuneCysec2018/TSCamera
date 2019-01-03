@@ -27,14 +27,16 @@ public interface IFreeTimeStamp {
     /** タイムスタンプをサーバ（TSA）から取得する
      * ハッシュ値とタイムスタンプサーバのURLを指定してタイムスタンプトークンを取得する。
      */
-    public void getFromServer(String path, byte[] hash, byte[] jpgData);
+    public void getFromServer(String path, byte[] hash,
+                              byte[] jpgData, byte[] x509Certificate);
 
     /** タイムスタンプトークンのバイナリをセットする
      * タイムスタンプ時刻等を取得する為にタイムスタンプトークンをセットする。
      * @param token タイムスタンプトークンをバイナリで指定
      * @return エラーなし FTERR_NO_ERROR が返る
      */
-    public int setToken(byte[] token, byte[] nonce, byte[] hash, byte[] jpgData);
+    public int setToken(byte[] token, byte[] nonce, byte[] hash,
+                        byte[] jpgData, byte[] x509Certificate);
 
     /** タイムスタンプトークンがセット済みかどうかを返す
      * getFromServer()またはsetToken()によりタイムスタンプトークンがセット済みかどうかを返す。

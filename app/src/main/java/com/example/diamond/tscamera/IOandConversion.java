@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
 class IOandConversion {
@@ -88,7 +89,7 @@ class IOandConversion {
     }
 
 
-    static byte[] setDataToJPEG(byte[] original, byte[] tst){
+    static byte[] setDataToJPEG(byte[] original, byte[] tst, byte[] cert){
         int bytesLength = original.length;
         byte[] result = new byte[2];
         int read = 0;
@@ -121,7 +122,7 @@ class IOandConversion {
                         || original[read + 1] == JPEGTag.SOF0
                         || original[read + 1] == JPEGTag.APP0
                         || original[read + 1] == JPEGTag.APP1
-                        || original[read + 1] == JPEGTag.APP5){
+                        ){
 
                     //resultをセグメント長分伸ばし、増えたところに新セグメントをコピー
                     result = Arrays.copyOf(result, result.length + segLen + 2);
@@ -131,14 +132,29 @@ class IOandConversion {
                     read  += segLen + 2;
 
 
-                }else if (original[read + 1] == JPEGTag.SOS) {  //SOSの次は直接画像データがくる
+                } else if (original[read + 1] == JPEGTag.APP5){
+                    //APP5をそのままコピー
+                    result = Arrays.copyOf(result, result.length + segLen + 2);
+                    System.arraycopy(original, read, result, write, segLen + 2);
+                    write += segLen + 2;            //次回書き込み・読み込み位置を設定
+                    read  += segLen + 2;
 
-                    //APPセグメントを挟み込む
+                    //APP10(Certificate)
+                    result = Arrays.copyOf(result, result.length + cert.length + 2);
+                    result[write++] = JPEGTag.MARKER;                       //マーカ
+                    result[write++] = JPEGTag.APP10;                        //APP10
+                    System.arraycopy(cert, 0, result, write, cert.length);
+                    write += cert.length;
+
+                    //APP11(TST)セグメントを挟み込む
                     result = Arrays.copyOf(result, result.length + tst.length + 2);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
-                    result[write++] = JPEGTag.APP10;                       //APP10タグ
+                    result[write++] = JPEGTag.APP11;                       //APP11タグ
                     System.arraycopy(tst, 0, result, write, tst.length);
                     write += tst.length;
+
+
+                } else if (original[read + 1] == JPEGTag.SOS) {  //SOSの次は直接画像データがくる
 
                     //resultをセグメント長分伸ばし、増えたところに最後までコピー
                     result = Arrays.copyOf(result, result.length + bytesLength - read);
@@ -236,6 +252,7 @@ class IOandConversion {
         byte APP1= (byte) 0xe1;
         byte APP5= (byte) 0xe5;
         byte APP10=(byte) 0xea;
+        byte APP11=(byte) 0xeb;
         byte SOF0= (byte) 0xc0;
         byte SOF2= (byte) 0xc2;
     }

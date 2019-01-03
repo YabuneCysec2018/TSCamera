@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
 public class httpConnect extends AsyncTask<String, Void, byte[]> {
@@ -18,15 +19,17 @@ public class httpConnect extends AsyncTask<String, Void, byte[]> {
     private byte[] nonce;
     private byte[] hash;
     private byte[] jpgData;
+    private byte[] x509Certificate;
 
 
-    httpConnect(byte[] request, String DirPath, byte[] nonce, byte[] hash, byte[] jpgData){
+    httpConnect(byte[] request, String DirPath, byte[] nonce,
+                byte[] hash, byte[] jpgData, byte[] x509Certificate){
         this.request = request;
         this.DirPath = DirPath;
         this.nonce = nonce;
         this.hash = hash;
         this.jpgData = jpgData;
-
+        this.x509Certificate = x509Certificate;
     }
 
 
@@ -101,7 +104,8 @@ public class httpConnect extends AsyncTask<String, Void, byte[]> {
 
             IOandConversion.saveBinary(DirPath, tst,"/tst.tst");
 
-            FreeTimeStamp freeTimeStamp = new FreeTimeStamp(tst, nonce, hash, jpgData);
+            FreeTimeStamp freeTimeStamp =
+                    new FreeTimeStamp(tst, nonce, hash, jpgData, x509Certificate);
 
             // タイムスタンプトークンの解析
 

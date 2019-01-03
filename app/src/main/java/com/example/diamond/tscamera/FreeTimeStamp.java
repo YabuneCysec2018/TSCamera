@@ -44,9 +44,10 @@ public class FreeTimeStamp implements IFreeTimeStamp{
     }
 
     /* コンストラクタ */
-    FreeTimeStamp(byte[] token, byte[] nonce, byte[] hash, byte[] jpgData) {
+    FreeTimeStamp(byte[] token, byte[] nonce, byte[] hash,
+                  byte[] jpgData, byte[] x509Certificate) {
         clear();
-        setToken(token, nonce, hash, jpgData);
+        setToken(token, nonce, hash, jpgData, x509Certificate);
     }
 
     /* ファイナライズ */
@@ -80,7 +81,8 @@ public class FreeTimeStamp implements IFreeTimeStamp{
 
     /* タイムスタンプをサーバ（TSA）から取得する */
     @Override
-    public void getFromServer(String dirPath, byte[] hash, byte[] jpgData) {
+    public void getFromServer(String dirPath, byte[] hash,
+                              byte[] jpgData, byte[] x509Certificate) {
 
         // nonceの生成
         byte[] nonce = new byte[8];
@@ -88,17 +90,17 @@ public class FreeTimeStamp implements IFreeTimeStamp{
         byte[] request = FreeTimeStamp.makeRequest(hash, nonce);
 
         // タイムスタンプサーバ接続
-        httpConnect connect = new httpConnect(request, dirPath, nonce, hash, jpgData);
+        httpConnect connect = new httpConnect(request, dirPath, nonce, hash, jpgData, x509Certificate);
         connect.execute("http://eswg.jnsa.org/freetsa");
 
     }
 
     /* タイムスタンプトークンのバイナリをセットする */
     @Override
-    public int setToken(byte[] token, byte[] nonce, byte[] hash, byte[] jpgData)
+    public int setToken(byte[] token, byte[] nonce, byte[] hash,
+                        byte[] jpgData, byte[] x509Certificate)
     {
-        if(token == null)
-        {
+        if(token == null) {
             // クリア
             clear();
             return FTERR_NO_ERROR;
@@ -106,20 +108,16 @@ public class FreeTimeStamp implements IFreeTimeStamp{
 
         // 解析
         int rc = parseToken(token);
-        if(rc == FTERR_NO_ERROR)
-        {
+        if(rc == FTERR_NO_ERROR) {
             // 解析成功
             token_ = token;
-        }
-        else
-        {
+        } else {
             // エラークリア
             clear();
         }
 
         // ナンス値の確認
-        if(nonce_ != null)
-        {
+        if(nonce_ != null) {
             // ナンスを返さないTSAがあるので解析結果にある場合のみチェック
             if(!FreePKI.isEqual(nonce, nonce_))
                 Log.d("nonce", "nonce");
@@ -128,7 +126,7 @@ public class FreeTimeStamp implements IFreeTimeStamp{
         // ハッシュ値の確認
         if(!FreePKI.isEqual(hash, msgImprint_)) Log.d("nonce", "nonce");
 
-        IOandConversion.setDataToJPEG(jpgData, token);
+        IOandConversion.setDataToJPEG(jpgData, token, x509Certificate);
 
         return rc;
     }
