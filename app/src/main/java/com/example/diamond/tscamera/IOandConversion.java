@@ -116,23 +116,14 @@ class IOandConversion {
                     segLen += 256;
                 }
 
-                if (original[read + 1] == JPEGTag.DQT
-                        || original[read + 1] == JPEGTag.DHT
+                if (original[read + 1] == JPEGTag.DHT
                         || original[read + 1] == JPEGTag.SOI
                         || original[read + 1] == JPEGTag.SOF0
                         || original[read + 1] == JPEGTag.APP0
                         || original[read + 1] == JPEGTag.APP1
                         || original[read + 1] == JPEGTag.APP5
                         || original[read + 1] == JPEGTag.APP6
-                        || original[read + 1] == JPEGTag.APP7
-                        || original[read + 1] == JPEGTag.APP8
-                        || original[read + 1] == JPEGTag.APP9
-                        || original[read + 1] == JPEGTag.APP10
-                        || original[read + 1] == JPEGTag.APP11
-                        || original[read + 1] == JPEGTag.APP12
-                        || original[read + 1] == JPEGTag.APP13
-                        || original[read + 1] == JPEGTag.APP14
-                        || original[read + 1] == JPEGTag.APP15){
+                        || original[read + 1] == JPEGTag.APP7){
 
                     //resultをセグメント長分伸ばし、増えたところに新セグメントをコピー
                     result = Arrays.copyOf(result, result.length + segLen + 2);
@@ -142,8 +133,8 @@ class IOandConversion {
                     read  += segLen + 2;
 
 
-                } else if (original[read + 1] == JPEGTag.APP5){
-                    //APP5をそのままコピー
+                } else if (original[read + 1] == JPEGTag.DQT){
+                    //DQTをそのままコピー
                     result = Arrays.copyOf(result, result.length + segLen + 2);
                     System.arraycopy(original, read, result, write, segLen + 2);
                     write += segLen + 2;            //次回書き込み・読み込み位置を設定
@@ -191,9 +182,9 @@ class IOandConversion {
         StringBuilder lon = new StringBuilder();
 
         if (lonDMS[0].contains("-")){    //東西判定
-            exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF,"w");
+            exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF,"N");
         }else{
-            exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF,"E");
+            exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF,"S");
         }
 
         lon.append(lonDMS[0].replace("-", ""));
@@ -253,25 +244,17 @@ class IOandConversion {
     public interface JPEGTag{
         byte MARKER = (byte) 0xff;
         byte SOI = (byte) 0xd8;
-        byte EOI = (byte) 0xd9;
         byte DQT = (byte) 0xdb;
         byte DHT = (byte) 0xc4;
-        byte DRI = (byte) 0xdd;
         byte SOS = (byte) 0xda;
         byte APP0= (byte) 0xe0;
         byte APP1= (byte) 0xe1;
         byte APP5= (byte) 0xe5;
         byte APP6= (byte) 0xe6;
         byte APP7= (byte) 0xe7;
-        byte APP8= (byte) 0xe8;
-        byte APP9= (byte) 0xe9;
         byte APP10=(byte) 0xea;
         byte APP11=(byte) 0xeb;
-        byte APP12=(byte) 0xec;
-        byte APP13=(byte) 0xed;
-        byte APP14=(byte) 0xee;
         byte APP15=(byte) 0xef;
         byte SOF0= (byte) 0xc0;
-        byte SOF2= (byte) 0xc2;
     }
 }
