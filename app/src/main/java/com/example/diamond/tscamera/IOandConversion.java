@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -123,17 +124,22 @@ class IOandConversion {
                     result = Arrays.copyOf(result, result.length + cert.length + 4);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
                     result[write++] = JPEGTag.APP2;                        //APP10
+                    byte[] lenByte = ByteBuffer.allocate(2).putInt(cert.length).array();
+                    System.arraycopy(lenByte, 0, result, write, lenByte.length);
+                    write += 2;
                     System.arraycopy(cert, 0, result, write, cert.length);
                     write += cert.length;
 
-                    /*
+
                     //APP11(TST)セグメントを挟み込む
                     result = Arrays.copyOf(result, result.length + tst.length + 2);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
                     result[write++] = JPEGTag.APP2;                       //APP11タグ
+                    lenByte = ByteBuffer.allocate(2).putInt(cert.length).array();
+                    System.arraycopy(lenByte, 0, result, write, lenByte.length);
                     System.arraycopy(tst, 0, result, write, tst.length);
                     write += tst.length;
-                    */
+
 
 
                     //DQTをそのままコピー
