@@ -119,6 +119,7 @@ class IOandConversion {
 
                 if (original[read + 1] == JPEGTag.APP5 && DQTcount == 0){
 
+                    /*
                     //APP10(Certificate)
                     result = Arrays.copyOf(result, result.length + cert.length + 2);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
@@ -132,6 +133,7 @@ class IOandConversion {
                     result[write++] = JPEGTag.APP2;                       //APP11タグ
                     System.arraycopy(tst, 0, result, write, tst.length);
                     write += tst.length;
+                    */
 
                     //DQTをそのままコピー
                     result = Arrays.copyOf(result, result.length + segLen + 2);
@@ -163,6 +165,9 @@ class IOandConversion {
                     //resultをセグメント長分伸ばし、増えたところに最後までコピー
                     result = Arrays.copyOf(result, result.length + bytesLength - read);
                     System.arraycopy(original, read, result, write, bytesLength - read);
+
+                    //TST
+
                     break;
 
                 } else { read += segLen + 2;}    //readを次のマーカーの位置に合わせる
