@@ -116,17 +116,17 @@ class IOandConversion {
                 if (original[read + 3] < 0) {
                     segLen += 256;
                 }
+                if (original[read + 1] == JPEGTag.DQT && DQTcount == 0){
 
-                if (original[read + 1] == JPEGTag.APP5 && DQTcount == 0){
 
-                    /*
                     //APP10(Certificate)
-                    result = Arrays.copyOf(result, result.length + cert.length + 2);
+                    result = Arrays.copyOf(result, result.length + cert.length + 4);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
                     result[write++] = JPEGTag.APP2;                        //APP10
                     System.arraycopy(cert, 0, result, write, cert.length);
                     write += cert.length;
 
+                    /*
                     //APP11(TST)セグメントを挟み込む
                     result = Arrays.copyOf(result, result.length + tst.length + 2);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
@@ -134,6 +134,7 @@ class IOandConversion {
                     System.arraycopy(tst, 0, result, write, tst.length);
                     write += tst.length;
                     */
+
 
                     //DQTをそのままコピー
                     result = Arrays.copyOf(result, result.length + segLen + 2);
