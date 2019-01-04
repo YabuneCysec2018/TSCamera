@@ -132,7 +132,7 @@ class IOandConversion {
                     write += cert.length;
 
                     //APP11(TST)セグメントを挟み込む
-                    result = Arrays.copyOf(result, result.length + tst.length + 2);
+                    result = Arrays.copyOf(result, result.length + tst.length + 4);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
                     result[write++] = JPEGTag.APP11;                       //APP11タグ
                     // set segment length
