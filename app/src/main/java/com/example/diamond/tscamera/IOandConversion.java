@@ -136,7 +136,7 @@ class IOandConversion {
                     result[write++] = JPEGTag.MARKER;                       //マーカ
                     result[write++] = JPEGTag.APP11;                       //APP11タグ
                     // set segment length
-                    lenByte = ByteBuffer.allocate(4).putInt(cert.length).array();
+                    lenByte = ByteBuffer.allocate(4).putInt(tst.length).array();
                     System.arraycopy(lenByte, 2, result, write, 2);
                     write += 2;
                     //set content
