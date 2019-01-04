@@ -15,7 +15,6 @@ import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
 class IOandConversion {
@@ -117,30 +116,28 @@ class IOandConversion {
                 if (original[read + 3] < 0) {
                     segLen += 256;
                 }
-                if (original[read + 1] == JPEGTag.DQT && DQTcount == 0){
 
+                if (original[read + 1] == JPEGTag.DQT && DQTcount == 0){
 
                     //APP10(Certificate)
                     result = Arrays.copyOf(result, result.length + cert.length + 4);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
-                    result[write++] = JPEGTag.APP2;                        //APP10
+                    result[write++] = JPEGTag.APP10;                        //APP10
                     byte[] lenByte = ByteBuffer.allocate(2).putInt(cert.length).array();
                     System.arraycopy(lenByte, 0, result, write, lenByte.length);
-                    write += 2;
+                    write += lenByte.length;
                     System.arraycopy(cert, 0, result, write, cert.length);
                     write += cert.length;
-
 
                     //APP11(TST)セグメントを挟み込む
                     result = Arrays.copyOf(result, result.length + tst.length + 2);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
-                    result[write++] = JPEGTag.APP2;                       //APP11タグ
+                    result[write++] = JPEGTag.APP11;                       //APP11タグ
                     lenByte = ByteBuffer.allocate(2).putInt(cert.length).array();
                     System.arraycopy(lenByte, 0, result, write, lenByte.length);
+                    write += lenByte.length;
                     System.arraycopy(tst, 0, result, write, tst.length);
                     write += tst.length;
-
-
 
                     //DQTをそのままコピー
                     result = Arrays.copyOf(result, result.length + segLen + 2);
