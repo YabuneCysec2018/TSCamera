@@ -123,7 +123,7 @@ class IOandConversion {
                     result = Arrays.copyOf(result, result.length + cert.length + 4);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
                     result[write++] = JPEGTag.APP10;                        //APP10
-                    byte[] lenByte = ByteBuffer.allocate(2).putInt(cert.length).array();
+                    byte[] lenByte = ByteBuffer.allocate(4).putInt(cert.length).array();
                     System.arraycopy(lenByte, 0, result, write, lenByte.length);
                     write += lenByte.length;
                     System.arraycopy(cert, 0, result, write, cert.length);
