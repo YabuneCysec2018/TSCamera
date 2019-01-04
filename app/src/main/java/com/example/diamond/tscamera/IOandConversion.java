@@ -126,7 +126,7 @@ class IOandConversion {
                     //set segment length
                     byte[] lenByte = ByteBuffer.allocate(4).putInt(cert.length).array();
                     System.arraycopy(lenByte, 2, result, write, 2);
-                    write += lenByte.length;
+                    write += 2;
                     //set content
                     System.arraycopy(cert, 0, result, write, cert.length);
                     write += cert.length;
@@ -138,7 +138,7 @@ class IOandConversion {
                     // set segment length
                     lenByte = ByteBuffer.allocate(4).putInt(cert.length).array();
                     System.arraycopy(lenByte, 2, result, write, 2);
-                    write += lenByte.length;
+                    write += 2;
                     //set content
                     System.arraycopy(tst, 0, result, write, tst.length);
                     write += tst.length;
