@@ -4,6 +4,7 @@ package com.example.diamond.tscamera;
 
 import android.location.Location;
 import android.media.ExifInterface;
+import android.os.Messenger;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -89,7 +90,7 @@ class IOandConversion {
     }
 
 
-    static byte[] setDataToJPEG(byte[] original, byte[] tst, byte[] cert){
+    static byte[] setDataToJPEG(byte[] original, byte[] tst, byte[] cert, byte[] signature){
         int bytesLength = original.length;
         byte[] result = new byte[2];
         int read = 0;
@@ -132,9 +133,21 @@ class IOandConversion {
                     write += cert.length;
 
                     //APP11(TST)セグメントを挟み込む
-                    result = Arrays.copyOf(result, result.length + tst.length + 4);
+                    result = Arrays.copyOf(result, result.length + signature.length + 4);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
                     result[write++] = JPEGTag.APP11;                       //APP11タグ
+                    // set segment length
+                    lenByte = ByteBuffer.allocate(4).putInt(signature.length).array();
+                    System.arraycopy(lenByte, 2, result, write, 2);
+                    write += 2;
+                    //set content
+                    System.arraycopy(signature, 0, result, write, signature.length);
+                    write += signature.length;
+
+                    //APP12(TST)セグメントを挟み込む
+                    result = Arrays.copyOf(result, result.length + tst.length + 4);
+                    result[write++] = JPEGTag.MARKER;                       //マーカ
+                    result[write++] = JPEGTag.APP12;                       //APP12タグ
                     // set segment length
                     lenByte = ByteBuffer.allocate(4).putInt(tst.length).array();
                     System.arraycopy(lenByte, 2, result, write, 2);
@@ -270,6 +283,7 @@ class IOandConversion {
         byte APP7= (byte) 0xe7;
         byte APP10=(byte) 0xea;
         byte APP11=(byte) 0xeb;
+        byte APP12=(byte) 0xec;
         byte APP15=(byte) 0xef;
         byte SOF0= (byte) 0xc0;
     }

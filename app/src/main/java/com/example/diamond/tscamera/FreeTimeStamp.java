@@ -48,9 +48,9 @@ public class FreeTimeStamp implements IFreeTimeStamp{
 
     /* コンストラクタ */
     FreeTimeStamp(byte[] token, byte[] nonce, byte[] hash,
-                  byte[] jpgData, byte[] x509Certificate, String pass) {
+                  byte[] jpgData, byte[] x509Certificate, String pass, byte[] mysign) {
         clear();
-        setToken(token, nonce, hash, jpgData, x509Certificate, pass);
+        setToken(token, nonce, hash, jpgData, x509Certificate, pass, mysign);
 
     }
 
@@ -83,10 +83,11 @@ public class FreeTimeStamp implements IFreeTimeStamp{
 
 
 
+    //使用しない/////////////////////////
     /* タイムスタンプをサーバ（TSA）から取得する */
     @Override
     public void getFromServer(String dirPath, byte[] hash,
-                              byte[] jpgData, byte[] x509Certificate) {
+                              byte[] jpgData, byte[] x509Certificate, byte[] mysign) {
 
         // nonceの生成
         byte[] nonce = new byte[8];
@@ -94,7 +95,7 @@ public class FreeTimeStamp implements IFreeTimeStamp{
         byte[] request = FreeTimeStamp.makeRequest(hash, nonce);
 
         // タイムスタンプサーバ接続
-        httpConnect connect = new httpConnect(request, dirPath, nonce, hash, jpgData, x509Certificate);
+        httpConnect connect = new httpConnect(request, dirPath, nonce, hash, jpgData, x509Certificate, mysign);
         connect.execute("http://eswg.jnsa.org/freetsa");
 
     }
@@ -102,7 +103,7 @@ public class FreeTimeStamp implements IFreeTimeStamp{
     /* タイムスタンプトークンのバイナリをセットする */
     @Override
     public int setToken(byte[] token, byte[] nonce, byte[] hash,
-                        byte[] jpgData, byte[] x509Certificate, String pass)
+                        byte[] jpgData, byte[] x509Certificate, String pass, byte[] signature)
     {
         if(token == null) {
             // クリア
@@ -135,7 +136,7 @@ public class FreeTimeStamp implements IFreeTimeStamp{
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(pass + "/TimeStampPic.jpeg");
-            fos.write(IOandConversion.setDataToJPEG(jpgData, token, x509Certificate));
+            fos.write(IOandConversion.setDataToJPEG(jpgData, token, x509Certificate, signature));
             fos.close();
         } catch (IOException e) {
             e.printStackTrace();

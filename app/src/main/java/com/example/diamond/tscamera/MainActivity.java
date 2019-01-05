@@ -432,7 +432,8 @@ public class MainActivity extends AppCompatActivity
                         byte[] request = FreeTimeStamp.makeRequest(TShash, nonce);
 
                         //send Request
-                        httpConnect connect = new httpConnect(request, DirPath, nonce, TShash, imageBytes, x509byte);
+                        httpConnect connect = new httpConnect(
+                                request, DirPath, nonce, TShash, imageBytes, x509byte, signature);
                         connect.execute("http://eswg.jnsa.org/freetsa");
 
                         mCaptureSession.setRepeatingRequest(mCaptureRequest,null,null);
