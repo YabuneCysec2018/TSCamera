@@ -90,7 +90,7 @@ class IOandConversion {
     }
 
 
-    static byte[] setDataToJPEG(byte[] original, byte[] tst, byte[] cert, byte[] signature){
+    static byte[] setDataToJPEG(byte[] original, byte[] tst, byte[] cert, byte[] mysign){
         int bytesLength = original.length;
         byte[] result = new byte[2];
         int read = 0;
@@ -133,16 +133,16 @@ class IOandConversion {
                     write += cert.length;
 
                     //APP11(TST)セグメントを挟み込む
-                    result = Arrays.copyOf(result, result.length + signature.length + 4);
+                    result = Arrays.copyOf(result, result.length + mysign.length + 4);
                     result[write++] = JPEGTag.MARKER;                       //マーカ
                     result[write++] = JPEGTag.APP11;                       //APP11タグ
                     // set segment length
-                    lenByte = ByteBuffer.allocate(4).putInt(signature.length).array();
+                    lenByte = ByteBuffer.allocate(4).putInt(mysign.length).array();
                     System.arraycopy(lenByte, 2, result, write, 2);
                     write += 2;
                     //set content
-                    System.arraycopy(signature, 0, result, write, signature.length);
-                    write += signature.length;
+                    System.arraycopy(mysign, 0, result, write, mysign.length);
+                    write += mysign.length;
 
                     //APP12(TST)セグメントを挟み込む
                     result = Arrays.copyOf(result, result.length + tst.length + 4);
