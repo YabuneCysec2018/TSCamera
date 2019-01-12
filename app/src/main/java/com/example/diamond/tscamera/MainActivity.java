@@ -181,8 +181,6 @@ public class MainActivity extends AppCompatActivity
             Surface mSurface = new Surface(mSurfaceTexture);
 
 
-
-
             //プレビュー用
             mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             mCaptureRequestBuilder.addTarget(mSurface);
@@ -194,8 +192,6 @@ public class MainActivity extends AppCompatActivity
             captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(imageReader.getSurface());
             captureBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
-
-
 
 
             //ビューを登録
@@ -341,32 +337,6 @@ public class MainActivity extends AppCompatActivity
             mCaptureSession.stopRepeating();
             //locationManager.removeUpdates(this);
             mCaptureSession.capture(captureBuilder.build(), mCameraCallback, null);
-
-            /*
-            byte[] picBin = null;
-            //TakePicture
-
-            //Make signature
-            byte[] signature = SignatureTool.SIGN(picBin);
-            String signedText = IOandConversion.byteToString(signature);
-            IOandConversion.saveStrings(DirPath, signedText, "/SignedData.txt");
-            IOandConversion.saveBinary(DirPath, signature, "/SignedData.bin");
-
-            //Make hash for TimeStamp
-            byte[] TShash = IOandConversion.getSHA256(signature);
-            String TSHashText = IOandConversion.byteToString(TShash);
-            IOandConversion.saveStrings(DirPath, TSHashText, "/HashForTimeStamp.txt");
-            IOandConversion.saveBinary(DirPath, TShash, "/TShash.bin");
-
-            FreeTimeStamp freeTimeStamp = new FreeTimeStamp();
-
-            //IOandConversion.setExif(DirPath + "/PictureData.jpg", latitude, longitude);
-            //picBin = IOandConversion.fileToBytes(new File(DirPath + "/PictureData.jpg"));
-
-            freeTimeStamp.getFromServer(DirPath, TShash, picBin);
-
-            mCaptureSession.setRepeatingRequest(mCaptureRequest,null,null);
-            */
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -383,7 +353,7 @@ public class MainActivity extends AppCompatActivity
                 public void onImageAvailable(ImageReader imageReader) {
                     Image image = imageReader.acquireNextImage();
 
-                    File topFIle = getExternalFilesDir(null);
+                    File topFIle = getFilesDir();
                     assert topFIle != null;
                     File[] files = topFIle.listFiles();   ///Count File
                     DirPath = topFIle + "/ContentsFile" + files.length;
@@ -442,37 +412,7 @@ public class MainActivity extends AppCompatActivity
                         e.printStackTrace();
                     }
 
-
                     image.close();
                 }
             };
-
-    /*
-    private byte[] takePicture() throws IOException {
-
-        File topFIle = getExternalFilesDir(null);
-        assert topFIle != null;
-        File[] files = topFIle.listFiles();   ///Count File
-        DirPath = topFIle + "/ContentsFile" + files.length;
-        File contentsFile = new File(DirPath);
-
-        if (!contentsFile.exists()) {
-            if (!contentsFile.mkdirs()) {
-                Log.i("MainActivity :", "ディレクトリ作成失敗");
-            }
-        }
-
-        File picFile = new File(contentsFile, "PictureData.jpg");
-
-
-
-        FileOutputStream fos = new FileOutputStream(picFile);
-        Bitmap bmp = mTextureView.getBitmap();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos); //保存
-        fos.close();
-
-        return IOandConversion.fileToBytes(picFile);
-    }
-    */
-
 }
