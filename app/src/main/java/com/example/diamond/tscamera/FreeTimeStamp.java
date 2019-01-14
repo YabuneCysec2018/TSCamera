@@ -47,10 +47,10 @@ public class FreeTimeStamp implements IFreeTimeStamp{
     }
 
     /* コンストラクタ */
-    FreeTimeStamp(byte[] token, byte[] nonce, byte[] hash,
+    FreeTimeStamp(byte[] response, byte[] nonce, byte[] hash,
                   byte[] jpgData, byte[] x509Certificate, String pass, byte[] mysign) {
         clear();
-        setToken(token, nonce, hash, jpgData, x509Certificate, pass, mysign);
+        setToken(response, nonce, hash, jpgData, x509Certificate, pass, mysign);
 
     }
 
@@ -102,9 +102,10 @@ public class FreeTimeStamp implements IFreeTimeStamp{
 
     /* タイムスタンプトークンのバイナリをセットする */
     @Override
-    public int setToken(byte[] token, byte[] nonce, byte[] hash,
+    public int setToken(byte[] response, byte[] nonce, byte[] hash,
                         byte[] jpgData, byte[] x509Certificate, String pass, byte[] signature)
     {
+        byte[] token = parseResponse(response, nonce);
         if(token == null) {
             // クリア
             clear();
@@ -269,10 +270,7 @@ public class FreeTimeStamp implements IFreeTimeStamp{
     static byte[] makeRequest(
             byte[] hash,            // 32/64 バイト
             byte[] nonce
-    )
-    {
-
-
+    ) {
 
         byte[] req = null;
 

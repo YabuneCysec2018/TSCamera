@@ -40,12 +40,11 @@ class SignatureTool {
             }
 
             PrivateKey privateKey;
-            if (keyStore.containsAlias(KeyAlias)) {
-                privateKey = (PrivateKey) keyStore.getKey(KeyAlias, null);
-
-            } else {
-                privateKey = createNewKeyPair().getPrivate();
+            if (!keyStore.containsAlias(KeyAlias)) {
+                createNewKeyPair();
             }
+
+            privateKey = (PrivateKey) keyStore.getKey(KeyAlias, null);
 
             Signature signature = Signature.getInstance(ALGOLITHM);
             signature.initSign(privateKey);
@@ -109,7 +108,6 @@ class SignatureTool {
                 .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
                 .setKeySize(2048)
                 .setCertificateSubject(new X500Principal(String.format("CN=%s",KeyAlias)))
-                .setCertificateSerialNumber(BigInteger.valueOf(1))
                 .build()
         );
 

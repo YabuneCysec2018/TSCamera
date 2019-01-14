@@ -46,12 +46,8 @@ public class httpConnect extends AsyncTask<String, Void, byte[]> {
             URL url = new URL(strings[0]);
 
             connection = (HttpURLConnection)url.openConnection();
-            connection.setConnectTimeout(3000); // タイムアウト 3 秒
-            connection.setRequestMethod("POST");
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "application/timestamp-query");
-            connection.setUseCaches(false);
-            connection.setFixedLengthStreamingMode(request.length);
 
             // タイムスタンプリクエストの書き込み
             BufferedOutputStream os = new BufferedOutputStream(connection.getOutputStream());
@@ -98,20 +94,8 @@ public class httpConnect extends AsyncTask<String, Void, byte[]> {
     protected void onPostExecute(byte[] response) {
         super.onPostExecute(response);
 
-        try {
-            IOandConversion.saveBinary(DirPath,response,"/response.res");
+        FreeTimeStamp freeTimeStamp = new FreeTimeStamp(
+                response, nonce, hash, jpgData, x509Certificate, DirPath, mysign);
 
-            byte[] tst = FreeTimeStamp.parseResponse(response, nonce);
-
-            IOandConversion.saveBinary(DirPath, tst,"/tst.tst");
-
-            FreeTimeStamp freeTimeStamp = new FreeTimeStamp(
-                    tst, nonce, hash, jpgData, x509Certificate, DirPath, mysign);
-
-            // タイムスタンプトークンの解析
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

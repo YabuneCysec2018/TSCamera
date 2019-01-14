@@ -5,8 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -36,14 +34,11 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.Toast;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
@@ -52,20 +47,17 @@ public class MainActivity extends AppCompatActivity
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCaptureSession;
 
-    private CaptureRequest.Builder mCaptureRequestBuilder;//プレビュー用
-    private CaptureRequest.Builder captureBuilder;//////////撮影用
+    private CaptureRequest.Builder previewCaptureBuilder;//プレビュー用
+    private CaptureRequest.Builder shootCaptureBuilder;//////////撮影用
     private CaptureRequest mCaptureRequest;
 
-    private TextureView mTextureView;
     private SurfaceTexture mSurfaceTexture;
 
     ImageReader imageReader;
 
     private String mCameraId;
     private CameraCharacteristics characteristics;
-    private String DirPath;
 
-    private LocationManager locationManager;
     Location location;
 
     double latitude;        //緯度
@@ -78,7 +70,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTextureView = findViewById(R.id.textureview);
+        TextureView mTextureView = findViewById(R.id.textureview);
 
         mTextureView.setSurfaceTextureListener(this);
 
@@ -99,7 +91,34 @@ public class MainActivity extends AppCompatActivity
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         mSurfaceTexture = surface;
         try {
-            openCamera();
+            CameraManager mCameraManager
+                    = (CameraManager) getBaseContext().getSystemService(Context.CAMERA_SERVICE);
+
+            assert mCameraManager != null;
+            String[] cameraIdList = mCameraManager.getCameraIdList();
+
+            for (String cameraId : cameraIdList) {
+                characteristics = mCameraManager.getCameraCharacteristics(cameraId);
+                if (characteristics.get(CameraCharacteristics.LENS_FACING)
+                        == CameraCharacteristics.LENS_FACING_BACK) {
+                    //アウトカメラ
+                    mCameraId = cameraId;
+                    break;
+                }
+            }
+            assert mCameraId != null;
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            mCameraManager.openCamera(mCameraId, mStateCallback, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -111,39 +130,6 @@ public class MainActivity extends AppCompatActivity
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) { return false; }
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) { }
-
-
-    @SuppressLint("MissingPermission")
-    private void openCamera() throws CameraAccessException {
-        CameraManager mCameraManager
-                = (CameraManager) getBaseContext().getSystemService(Context.CAMERA_SERVICE);
-
-        assert mCameraManager != null;
-        String[] cameraIdList = mCameraManager.getCameraIdList();
-
-        for (String cameraId : cameraIdList) {
-            characteristics = mCameraManager.getCameraCharacteristics(cameraId);
-            if (characteristics.get(CameraCharacteristics.LENS_FACING)
-                    == CameraCharacteristics.LENS_FACING_BACK) {
-                //アウトカメラ
-                mCameraId = cameraId;
-                break;
-            }
-        }
-        assert mCameraId != null;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        mCameraManager.openCamera(mCameraId, mStateCallback, null);
-    }
 
 
     private final CameraDevice.StateCallback mStateCallback
@@ -182,16 +168,16 @@ public class MainActivity extends AppCompatActivity
 
 
             //プレビュー用
-            mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            mCaptureRequestBuilder.addTarget(mSurface);
-            mCaptureRequestBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
+            previewCaptureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            previewCaptureBuilder.addTarget(mSurface);
+            previewCaptureBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
 
             //撮影用
             imageReader = ImageReader.newInstance(mCameraBufferSize.getWidth(), mCameraBufferSize.getHeight(), ImageFormat.JPEG,1);
             imageReader.setOnImageAvailableListener(onImageAvailableListener,null);
-            captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            captureBuilder.addTarget(imageReader.getSurface());
-            captureBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
+            shootCaptureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            shootCaptureBuilder.addTarget(imageReader.getSurface());
+            shootCaptureBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
 
 
             //ビューを登録
@@ -226,7 +212,7 @@ public class MainActivity extends AppCompatActivity
 
 
     public void RepeatingRequest() {   //TextureViewへカメラの画像を連続表示
-        mCaptureRequest = mCaptureRequestBuilder.build();
+        mCaptureRequest = previewCaptureBuilder.build();
 
         try {
             mCaptureSession.setRepeatingRequest(mCaptureRequest, null, null);
@@ -243,8 +229,7 @@ public class MainActivity extends AppCompatActivity
         Log.d("debug", "locationStart()");
 
         // LocationManager インスタンス生成
-        locationManager =
-                (LocationManager) getSystemService(LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         if (locationManager != null
                 && (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -336,7 +321,7 @@ public class MainActivity extends AppCompatActivity
         try {
             mCaptureSession.stopRepeating();
             //locationManager.removeUpdates(this);
-            mCaptureSession.capture(captureBuilder.build(), mCameraCallback, null);
+            mCaptureSession.capture(shootCaptureBuilder.build(), mCameraCallback, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -356,8 +341,8 @@ public class MainActivity extends AppCompatActivity
                     File topFIle = getFilesDir();
                     assert topFIle != null;
                     File[] files = topFIle.listFiles();   ///Count File
-                    DirPath = topFIle + "/ContentsFile" + files.length;
-                    File contentsFile = new File(DirPath);
+                    String dirPath = topFIle + "/ContentsFile" + files.length;
+                    File contentsFile = new File(dirPath);
 
                     if (!contentsFile.exists()) {
                         if (!contentsFile.mkdirs()) {
@@ -372,28 +357,23 @@ public class MainActivity extends AppCompatActivity
                         byteBuffer.get(imageBytes);
                         image.close();
 
-                        FileOutputStream fos = new FileOutputStream(DirPath+"/PictureData.jpeg");
+                        FileOutputStream fos = new FileOutputStream(dirPath +"/PictureData.jpeg");
                         fos.write(imageBytes);
                         fos.close();
 
                         //Make signature
                         SignatureTool signatureTool = new SignatureTool();
                         byte[] signature = signatureTool.SIGN(imageBytes);
-                        String signedText = IOandConversion.byteToString(signature);
-                        IOandConversion.saveStrings(DirPath, signedText, "/SignedData.txt");
-                        IOandConversion.saveBinary(DirPath, signature, "/SignedData.bin");
+                        IOandConversion.saveBinary(dirPath, signature, "/SignedData.bin");
                         X509Certificate x509Certificate = signatureTool.getX509Certificate();
                         byte[] x509byte = x509Certificate.getTBSCertificate();
 
                         //Make hash for TimeStamp
                         byte[] TShash = IOandConversion.getSHA256(signature);
-                        String TSHashText = IOandConversion.byteToString(TShash);
-                        IOandConversion.saveStrings(DirPath, TSHashText, "/HashForTimeStamp.txt");
-                        IOandConversion.saveBinary(DirPath, TShash, "/TShash.bin");
 
                         //set Location data
-                        IOandConversion.setExif(DirPath + "/PictureData.jpeg", latitude, longitude);
-                        imageBytes = IOandConversion.fileToBytes(new File(DirPath + "/PictureData.jpeg"));
+                        IOandConversion.setExif(dirPath + "/PictureData.jpeg", latitude, longitude);
+                        imageBytes = IOandConversion.fileToBytes(new File(dirPath + "/PictureData.jpeg"));
 
                         // nonceの生成
                         byte[] nonce = new byte[8];
@@ -403,7 +383,7 @@ public class MainActivity extends AppCompatActivity
 
                         //send Request
                         httpConnect connect = new httpConnect(
-                                request, DirPath, nonce, TShash, imageBytes, x509byte, signature);
+                                request, dirPath, nonce, TShash, imageBytes, x509byte, signature);
                         connect.execute("http://eswg.jnsa.org/freetsa");
 
                         mCaptureSession.setRepeatingRequest(mCaptureRequest,null,null);
